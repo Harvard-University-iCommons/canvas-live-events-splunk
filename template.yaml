@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  canvas-live-events-splunk
+
+  SAM Template for canvas-live-events-splunk
+
+Globals:
+  Function:
+    Timeout: 60
+
+Parameters:
+  SplunkHecUrlParameter:
+    Type: String
+
+  SplunkHecTokenParameter:
+    Type: String
+
+  VpcIdParameter:
+    Type: AWS::EC2::VPC::Id
+
+  SubnetIdsParameter:
+    Type: List<AWS::EC2::Subnet::Id>
+
+Resources:
+
+  CanvasEventDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "uw-canvas-streaming-data-dlq"
+
+  CanvasEventQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: "canvas-live-events-queue"  # Instructure requires that the queue name begins with "canvas-live-events"
+      VisibilityTimeout: 390  # Per AWS doc, set to (6 * function timeout) + MaximumBatchingWindowInSeconds
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt CanvasEventDeadLetterQueue.Arn
+        maxReceiveCount: 3
+
+  CanvasEventQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Statement:
+          -
+            Action: "SQS:*"
+            Effect: Allow
+            Principal:
+              AWS:
+                - "636161780776" # Instructure's AWS Account ID - this allows them to send messages to our queue
+            Resource: !GetAtt CanvasEventQueue.Arn
+      Queues:
+        - !Ref CanvasEventQueue
+
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Default SG for the canvas-live-events-splunk Lambda"
+      VpcId: !Ref VpcIdParameter
+
+  CanvasEventHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Receives Canvas Live Events from an SQS queue and forwards them to Splunk
+      CodeUri: canvas_event_handler
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      Environment:
+        Variables:
+          SPLUNK_HEC_URL: !Ref SplunkHecUrlParameter
+          SPLUNK_HEC_TOKEN: !Ref SplunkHecTokenParameter
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt CanvasEventQueue.Arn
+            BatchSize: 500
+            MaximumBatchingWindowInSeconds: 30
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroup
+        SubnetIds: !Ref SubnetIdsParameter
+
+Outputs:
+  CanvasEventQueueUrl:
+    Description: "The SQS Queue URL that can be configured as the target for a data stream in Canvas"
+    Value: !Ref CanvasEventQueue

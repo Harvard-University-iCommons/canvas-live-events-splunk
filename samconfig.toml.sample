@@ -1,0 +1,18 @@
+version = 0.1
+[default]
+
+[default.build]
+
+[default.build.parameters]
+use_container = true
+skip_pull_image = true
+region = "us-east-1"
+
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "canvas-live-events-splunk"
+s3_prefix = "canvas-live-events-splunk"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+parameter_overrides = "SplunkHecUrlParameter=\"<splunk-hec-url>\" SplunkHecTokenParameter=\"<splunk-hec-token>\" VpcIdParameter=\"<VPC ID>\" SubnetIdsParameter=\"<comma-separated list of subnet IDs>\""
