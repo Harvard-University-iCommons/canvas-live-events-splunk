@@ -18,9 +18,9 @@ To get started, you will need:
 This repository includes a sample configuration file called `samconfig.toml.sample`. Copy this file to a file called `samconfig.toml` and edit it to match your environment:
 * The configuration defaults to the 'us-east-1' region; if your environment is not in that region, you will need to change all references to 'us-east-1' to the region you are using.
 * Fill in appropriate values in the last line of the file, `parameter_overrides`:
-** provide your Splunk HEC URL and token
-** provide your VPC ID
-** provide a comma-separated list (can be just one) of subnet IDs in your VPC where your Lambda function can run
+  * provide your Splunk HEC URL and token
+  * provide your VPC ID
+  * provide a comma-separated list (can be just one) of subnet IDs in your VPC where your Lambda function can run
 
 ## Deploy the application
 
