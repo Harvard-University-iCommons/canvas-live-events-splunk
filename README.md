@@ -43,6 +43,16 @@ The first command will build the source of your application. The second command 
 
 When the deployment is complete, the CLI will print the URL corresponding to your SQS queue. You can use this URL to configure Canvas Live Events.
 
+## Configure Canvas Live Events
+
+Log into your Canvas instance as a root-level administrator and choose the "Data Services" option in the root account navigation menu. Click the `+ Add` button to create a new event subscription, choose the SQS delivery method, and enter the URL of the queue that you created in the previous step.
+
+Now you can choose which Canvas events you want to send to Splunk. To receieve pageview events, select the "Asset" events. Save the subscrption, and in a few minutes you should start to receive events in your SQS queue. The Lambda function you created above will automatically process the events in the queue and send them to Splunk.
+
+## Future directions
+
+This SAM application uses Lambda environment variables to configure the Splunk HEC URL and token. You may wish to use AWS Secrets Manager to store these values in a secure location; see the [AWS Secrets Manager documentation](https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html) for more information. You would need to modify the Lambda function code to retrieve these values from Secrets Manager at runtime instead of getting them from the environment variables.
+
 ## Cleanup
 
 To delete the sample application that you created, use the AWS CLI. Assuming you used your project name for the stack name, you can run the following:
