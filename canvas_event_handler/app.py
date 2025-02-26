@@ -4,7 +4,6 @@ from datetime import datetime
 
 import requests
 
-env = os.environ['ENV']
 
 splunk_hec_token = os.environ['SPLUNK_HEC_TOKEN']
 splunk_hec_url = os.environ["SPLUNK_HEC_URL"]
