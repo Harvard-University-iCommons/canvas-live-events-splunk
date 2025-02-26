@@ -65,7 +65,7 @@ Resources:
       Description: Receives Canvas Live Events from an SQS queue and forwards them to Splunk
       CodeUri: canvas_event_handler
       Handler: app.lambda_handler
-      Runtime: python3.7
+      Runtime: python3.13
       Environment:
         Variables:
           SPLUNK_HEC_URL: !Ref SplunkHecUrlParameter
