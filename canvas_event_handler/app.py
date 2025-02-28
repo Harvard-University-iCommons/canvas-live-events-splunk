@@ -8,9 +8,10 @@ import requests
 splunk_hec_token = os.environ['SPLUNK_HEC_TOKEN']
 splunk_hec_url = os.environ["SPLUNK_HEC_URL"]
 
+
 def lambda_handler(event, context):
 
-    records = event["Records"]
+    records = event.get("Records")
 
     event_batch = []
 
@@ -35,11 +36,12 @@ def lambda_handler(event, context):
         }
         event_batch.append(json.dumps(event))
 
-    # send the batch of events to Splunk
-    headers = {"Authorization": f"Splunk {splunk_hec_token}"}
-    res = requests.post(splunk_hec_url, headers=headers, data='\n'.join(event_batch))
+    if event_batch:
+        # send the batch of events to Splunk
+        headers = {"Authorization": f"Splunk {splunk_hec_token}"}
+        res = requests.post(splunk_hec_url, headers=headers, data='\n'.join(event_batch))
+        print(f'[INFO] splunk response: {res.text}')
 
     print(f"[INFO] lambda invocation handled {len(event_batch)} events")
-    print(f'[INFO] splunk response: {res.text}')
 
-    return {"statusCode": 200, "splunk_response": res.text}
+    return {"statusCode": 200}
